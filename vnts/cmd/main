@@ -35,7 +35,7 @@ start_process() {
     log_msg "开始运行 ..."
     mkdir -p "${CONFIG_DIR}/vnts_wg"
     [ -L "${TRIM_APPDEST}/bin/vnts_wg" ] || ln -sf "${CONFIG_DIR}/vnts_wg" "${TRIM_APPDEST}/bin/vnts_wg"
-    [ -L "${TRIM_APPDEST}/bin/vnts_log.txt" ] || ln -sf "${LOG_FILE}" "${CONFIG_DIR}/vnts.log"
+    [ -L "${CONFIG_DIR}/vnts.log" ] || ln -sf "${LOG_FILE}" "${CONFIG_DIR}/vnts.log"
     # 运行启动参数
     bash -c "${CMD}" >> ${LOG_FILE} 2>&1 &
     # 写入进程文件
