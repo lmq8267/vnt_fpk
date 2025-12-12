@@ -1,0 +1,91 @@
+name: 打包fpk安装包
+
+on:
+  workflow_dispatch:
+    inputs:
+      vnt:
+        description: '打包VNT客户端fpk包'
+        required: true
+        default: true
+        type: boolean
+      vnts:
+        description: '打包VNTS服务端fpk包'
+        required: true
+        default: true
+        type: boolean
+  
+env:
+  TZ: Asia/Shanghai
+  tags: "${{ github.event.inputs.tag }}"
+
+permissions:
+  contents: write
+  actions: write
+  
+jobs:
+  build:
+    name: 正在打包 ${{ matrix.target }} 
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        
+        - target: VNT客户端
+          name: vnt-cli-fpk
+          os: ubuntu-latest
+
+        - target: VNTS服务端
+          name: vnts-fpk
+          os: ubuntu-latest
+          
+    runs-on: ${{ matrix.os }}
+    env:
+         TARGET: ${{ matrix.target }}
+    steps:
+     - name: Checkout code
+       uses: actions/checkout@v5
+
+     -  name: delete-workflow-runs
+        uses: Mattraks/delete-workflow-runs@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          retain_days: 0
+          keep_minimum_runs: 0
+       
+     - name: 打包VNT客户端
+       if: ${{ matrix.target == 'VNT客户端' && github.event.inputs.vnt == 'true' }}
+       run: |
+        echo -e "\033[32m ===> 在线下载 fnpack 飞牛打包工具 <=== \033[0m"
+        curl -Lk -o fnpack https://static2.fnnas.com/fnpack/fnpack-1.0.4-linux-amd64
+        chmod +x fnpack
+        sudo mv fnpack /usr/local/bin/fnpack
+        fnpack --help || true
+        
+        echo -e "\033[32m ===> 开始打包VNT客户端 vnt.fpk 包 <=== \033[0m"
+        
+        fnpack build -d ./vnt/
+      
+        echo -e "\033[32m ✅ 打包 vnt.fpk 包完成！\033[0m"
+
+     - name: 打包VNTS服务端
+       if: ${{ matrix.target == 'VNTS服务端' && github.event.inputs.vnts == 'true' }}
+       run: |
+        echo -e "\033[32m ===> 在线下载 fnpack 飞牛打包工具 <=== \033[0m"
+        curl -Lk -o fnpack https://static2.fnnas.com/fnpack/fnpack-1.0.4-linux-amd64
+        chmod +x fnpack
+        sudo mv fnpack /usr/local/bin/fnpack
+        fnpack --help || true
+        
+        echo -e "\033[32m ===> 开始打包VNTS服务端 vnts.fpk 包 <=== \033[0m"
+        
+        fnpack build -d ./vnts/
+      
+        echo -e "\033[32m ✅ 打包 vnts.fpk 包完成！\033[0m"
+
+        
+     - uses: actions/upload-artifact@v4
+       with:
+        name: ${{ matrix.name }}
+        path: ./*.spk
+
+          
