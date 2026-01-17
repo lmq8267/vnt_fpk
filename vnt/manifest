@@ -1,0 +1,18 @@
+appname               = vnt
+version               = 1.2.16
+display_name          = VNT-客户端
+desc = <a href="https://github.com/vnt-dev/vnt" target="_blank">VNT</a> 是一个简便高效的异地组网、内网穿透工具<br>QQ群：<a href="http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=lqI5MWnb6XfcRTfjSQ0qqgFkl3Xvxs1w&authKey=q8pnHRvDICAhwa9E3xAtzhnLYtR5JcYQllqPvifeYMJJD8Gt2PvO%2B0qVqcxi7aVE&noverify=0&group_code=1034868233" target="_blank">vnt组网互联交流群</a> &nbsp;<a href="http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=z-CwPEfiF1Lh4T0Py3puH6uYvlk1w3Sj&authKey=AC9kpUAWkAZVD3z%2FH5bpHxvzImkI92xRp14unE1KQAJburMqnXoPplUNKj6HponY&noverify=0&group_code=950473757" target="_blank">Link 2</a> &nbsp; 
+<a href="http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=l_1lgEZzqqRdH920FeKJ0ql_d7JBTREV&authKey=Nu8fwAYSx8qw6LVjNB5C5meo3iI%2B%2B0Jt3RrD3ddd54r3x%2FcZK%2BPE7xkdQL8DC2i7&noverify=0&group_code=1060550456" target="_blank">vnt组网互联交流群3</a>
+platform              = all
+source                = thirdparty
+source                = thirdparty
+maintainer            = vnt-dev
+maintainer_url        = https://github.com/vnt-dev/vnt
+distributor           = 8267
+distributor_url       = https://github.com/lmq8267/vnt_fpk
+
+ctl_stop              = true
+install_type          = root
+
+desktop_uidir         = ui
+desktop_applaunchname = vnt.Application

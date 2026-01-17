@@ -1,0 +1,173 @@
+#!/bin/bash
+
+LOG_FILE="/var/apps/vnt/var/info.log"
+PID_FILE="/var/apps/vnt/var/app.pid"
+
+VNT_config="/var/apps/vnt/shares/vnt/config.yaml"  
+VNT_bin="/var/apps/vnt/target/bin/vnt-cli"
+
+# write the command to start your program here 
+CMD="cd $(dirname ${VNT_bin}) && ./vnt-cli -f ${VNT_config}"
+
+log_msg() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')]: INFO $1" >> ${LOG_FILE}
+}
+
+start_process() {
+    if status; then
+        return 0
+    fi
+
+    # 清空日志
+    > "${LOG_FILE}"
+    log_msg "开始运行 ..."
+
+    # 尝试停止可能残留的旧实例
+    ${VNT_bin} --stop 2>/dev/null
+
+    # 确保配置文件存在
+    [ -f "${VNT_config}" ] || touch "${VNT_config}"
+
+    # 配置文件为空则不启动
+    if [[ ! -s "${VNT_config}" ]]; then
+        log_msg "配置文件 ${VNT_config} 为空，请填写配置文件后重新启动！"
+        return 0
+    fi
+
+    # 启动主控制进程（一个 PID 管全部）
+    (
+        # 日志监控子进程
+        {
+            while true; do
+                if [[ -f "${LOG_FILE}" ]]; then
+                    LOG_SIZE=$(stat -c%s "${LOG_FILE}")
+                    if (( LOG_SIZE > 5*1024*1024 )); then
+                        tail -c $((2*1024*1024)) "${LOG_FILE}" > "${LOG_FILE}.tmp" \
+                            && mv "${LOG_FILE}.tmp" "${LOG_FILE}"
+                    fi
+                fi
+                sleep 300
+            done
+        } &
+        LOG_PID=$!
+
+        # 收到退出信号时，清理子进程
+        trap '
+            kill -TERM '"$LOG_PID"' 2>/dev/null
+            exit 0
+        ' SIGINT SIGTERM EXIT
+
+        # 启动 vnt-cli（前台 exec，占用当前 PID）
+        cd "$(dirname "${VNT_bin}")" || exit 1
+        exec ./vnt-cli -f "${VNT_config}" >> "${LOG_FILE}" 2>&1
+    ) &
+    MAIN_PID=$!
+
+    # 记录唯一 PID
+    echo "${MAIN_PID}" > "${PID_FILE}"
+
+    log_msg "启动命令： cd $(dirname ${VNT_bin}) && ./vnt-cli -f ${VNT_config}"
+    log_msg "进程PID： ${MAIN_PID}"
+
+    tun_name=$(sed -n 's/^[[:space:]]*device_name:[[:space:]]*\([^#]*\).*/\1/p' "${VNT_config}" | tr -d "'\"" | xargs)
+    [ -z "$tun_name"] && tun_name="vnt-tun"
+    iptables -I FORWARD -o $tun_name -j ACCEPT
+    iptables -I FORWARD -i $tun_name -j ACCEPT
+    iptables -I INPUT -i $tun_name -j ACCEPT
+    iptables -t nat -I POSTROUTING -o $tun_name -j MASQUERADE
+    # iptables -t nat -I POSTROUTING ! -o $tun_name -s 10.26.0.0/24 -j MASQUERADE
+
+    # 记录运行时间
+    echo `date +%s` > /var/apps/vnt/var/vntcli_time
+
+    return 0
+}
+
+stop_process() {
+    log_msg "正在停止 ..."
+
+    if [ -r "${PID_FILE}" ]; then
+        pid=$(head -n 1 "${PID_FILE}" | tr -d '[:space:]')
+        
+        log_msg "进程PID：${pid}"
+        if ! check_process "${pid}"; then
+            # 进程不存在，删除进程文件
+            rm -f "${PID_FILE}"
+            log_msg "进程不存在，删除进程文件"
+            return
+        fi
+
+        log_msg "发送 TERM signal 停止信号到 PID:${pid}..."
+        kill -TERM ${pid} >> ${LOG_FILE} 2>&1
+
+        local count=0
+        while check_process "${pid}" && [ $count -lt 10 ]; do
+            sleep 1
+            count=$((count + 1))
+            log_msg "等待进程终止... (${count}s/10s)"
+        done
+
+        if check_process "${pid}"; then
+            log_msg "发送 KILL signal 强制停止信号到 PID:${pid}..."
+            kill -KILL "${pid}"
+            sleep 1
+            rm -f "${PID_FILE}"
+        else
+            log_msg "vnts进程已结束运行！"
+        fi
+        tun_name=$(sed -n 's/^[[:space:]]*device_name:[[:space:]]*\([^#]*\).*/\1/p' "${VNT_config}" | tr -d "'\"" | xargs)
+        [ -z "$tun_name"] && tun_name="vnt-tun"
+        iptables -D FORWARD -o $tun_name -j ACCEPT 2>/dev/null
+        iptables -D FORWARD -i $tun_name -j ACCEPT 2>/dev/null
+        iptables -D INPUT -i $tun_name -j ACCEPT 2>/dev/null
+        iptables -t nat -D POSTROUTING -o $tun_name -j MASQUERADE 2>/dev/null
+        # iptables -t nat -D POSTROUTING ! -o $tun_name -s 10.26.0.0/24 -j MASQUERADE 2>/dev/null
+    fi
+
+    return 0
+}
+
+check_process() {
+    local pid=$1
+    if kill -0 "${pid}" 2>/dev/null; then
+        return 0  # 进程在运行中
+    else
+        return 1  # 进程未运行
+    fi
+}
+
+status() {
+    if [ -f "${PID_FILE}" ]; then
+        pid=$(head -n 1 "${PID_FILE}" | tr -d '[:space:]')
+        if check_process "${pid}"; then
+            return 0
+        else
+            # 进程未运行，但pid文件存在 - 应该要删除它
+            rm -f "${PID_FILE}"
+        fi    
+    fi
+
+    return 1
+}
+
+case $1 in
+start)
+    # 启动应用的命令，成功返回 0，失败返回 1
+    start_process
+    ;;
+stop)
+    # 停止应用的命令，成功返回 0，失败返回 1
+    stop_process
+    ;;
+status)
+    # 检查应用运行状态，运行中返回 0，未运行返回 3
+    if status; then 
+        exit 0
+    else 
+        exit 3
+    fi
+    ;;
+*)
+    exit 1
+    ;;
+esac

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+### This script is called after the user uninstalls the application.
+
+LOG_FILE="/var/apps/vnt/var/info.log"
+VNT_config="/var/apps/vnt/shares/vnt/config.yaml"  
+
+log_msg() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')]: INFO $1" >> ${LOG_FILE}
+}
+
+log_msg "正在卸载，用户选择配置文件保留选项: $vnt_data_action"
+
+# 根据用户选择执行相应逻辑
+if [ "$vnt_data_action" = "delete" ]; then
+    log_msg "已删除VNT的配置文件：$VNT_config"
+    rm -rf ${VNT_config}
+else
+    log_msg "已保留VNT的配置文件：${VNT_config}"
+fi
+
+exit 0

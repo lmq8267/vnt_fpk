@@ -1,0 +1,37 @@
+[
+    {
+        "stepTitle": "确认卸载",
+        "items": [
+            {
+                "type": "tips",
+                "helpText": "您即将卸载此应用。请选择如何处理VNT配置文件："
+            },
+            {
+                "type": "radio",
+                "field": "vnt_data_action",
+                "label": "数据保留选项",
+                "initValue": "keep",
+                "options": [
+                    {
+                        "label": "保留配置文件（推荐）- 重新安装VNT客户端时将使用这个配置文件启动组网",
+                        "value": "keep"
+                    },
+                    {
+                        "label": "删除配置文件 - 重新安装时需要重新添加配置文件启动",
+                        "value": "delete"
+                    }
+                ],
+                "rules": [
+                    {
+                        "required": true,
+                        "message": "请选择数据保留选项"
+                    }
+                ]
+            },
+            {
+                "type": "tips",
+                "helpText": "<strong>提示：</strong> 若选择保留配置文件，下次安装VNT客户端时将会使用这个配置文件直接启动，若不想继续加入这个组网可选择删除"
+            }
+        ]
+    }
+]

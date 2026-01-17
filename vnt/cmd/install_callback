@@ -12,12 +12,12 @@ if [ -z "$cpucore" ] ; then
 	exit 1
 fi
 
-mv -f "${TRIM_APPDEST}/bin/vnts_{cpucore}" "${TRIM_APPDEST}/bin/vnts"
-rm -f "${TRIM_APPDEST}/bin"/vnts_*
+mv -f "${TRIM_APPDEST}/bin/vnt-cli_${cpucore}" "${TRIM_APPDEST}/bin/vnt-cli"
+rm -f "${TRIM_APPDEST}/bin"/vnt-cli_*
 
-[ -x "${TRIM_APPDEST}/bin/vnts" ] || chmod +x "${TRIM_APPDEST}/bin/vnts"
+[ -x "${TRIM_APPDEST}/bin/vnt-cli" ] || chmod +x "${TRIM_APPDEST}/bin/vnt-cli"
 
-if [[ "$(${TRIM_APPDEST}/bin/vnts -h 2>&1 | wc -l)" -lt 3 ]] ; then
+if [[ "$(${TRIM_APPDEST}/bin/vnt-cli -h 2>&1 | wc -l)" -lt 3 ]] ; then
 	echo "程序与架构不匹配，无法运行！" > "${TRIM_TEMP_LOGFILE}"
 	exit 1
 fi
