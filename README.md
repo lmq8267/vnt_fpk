@@ -6,3 +6,22 @@
 	<h1>VNT - 飞牛fpk安装包</h1>
 </div>
 </div>
+
+支持 `x86_64` `arm64` `arm` `armv7`  `i386`等架构，下载后在应用商店 手动上传安装即可
+
+## UI预览
+
+### VNT客户端
+
+<img width="1506" height="794" alt="G8TO3UOT9}6 {LELW)2SAK" src="https://github.com/user-attachments/assets/09207a5e-5544-47f4-a0af-fec49c494ced" />
+
+<img width="1423" height="684" alt="image" src="https://github.com/user-attachments/assets/3507deb0-23fd-4382-a784-1c0836ce445e" />
+
+<img width="1436" height="767" alt="image" src="https://github.com/user-attachments/assets/ec8dbdcb-d82f-4f70-a651-0332c0a7ffad" />
+
+### VNTS服务端
+
+<img width="1413" height="800" alt="image" src="https://github.com/user-attachments/assets/fd401e38-5389-4c4d-a120-400cc1c24283" />
+
+<img width="963" height="657" alt="image" src="https://github.com/user-attachments/assets/174c2cc5-561c-4ca2-99c4-b1bbe8a725a7" />
+

@@ -6,17 +6,21 @@ on:
       vnt:
         description: '打包VNT客户端fpk包'
         required: true
-        default: false
+        default: true
         type: boolean
       vnts:
         description: '打包VNTS服务端fpk包'
         required: true
         default: true
         type: boolean
+      release:
+        description: '是否发布到 Release'
+        required: true
+        default: true
+        type: boolean
   
 env:
   TZ: Asia/Shanghai
-  tags: "${{ github.event.inputs.tag }}"
 
 permissions:
   contents: write
@@ -55,37 +59,66 @@ jobs:
      - name: 打包VNT客户端
        if: ${{ matrix.target == 'VNT客户端' && github.event.inputs.vnt == 'true' }}
        run: |
-        echo -e "\033[32m ===> 在线下载 fnpack 飞牛打包工具 <=== \033[0m"
-        curl -Lk -o fnpack https://static2.fnnas.com/fnpack/fnpack-1.0.4-linux-amd64
-        chmod +x fnpack
-        sudo mv fnpack /usr/local/bin/fnpack
-        fnpack --help || true
+        echo -e "\033[32m ===> 开始打包VNT客户端 vnt-cli.fpk 包 <=== \033[0m"
         
-        echo -e "\033[32m ===> 开始打包VNT客户端 vnt.fpk 包 <=== \033[0m"
-        
-        fnpack build -d ./vnt/
+        cp -rf ./vnt /opt/vnt
+        cd /opt/vnt
+        tar -czf app.tgz --transform='s,app/,,g' app/bin app/ui
+        tar -czf vnt-cli.fpk --exclude='app' *
+        mkdir -p /opt/fnpack_vnt
+        cp -rf vnt-cli.fpk /opt/fnpack_vnt/vnt-cli.fpk
       
-        echo -e "\033[32m ✅ 打包 vnt.fpk 包完成！\033[0m"
+        echo -e "\033[32m ✅ 打包 vnt-cli.fpk 包完成！\033[0m"
 
      - name: 打包VNTS服务端
        if: ${{ matrix.target == 'VNTS服务端' && github.event.inputs.vnts == 'true' }}
        run: |
         echo -e "\033[32m ===> 在线下载 fnpack 飞牛打包工具 <=== \033[0m"
-        curl -Lk -o fnpack https://static2.fnnas.com/fnpack/fnpack-1.0.4-linux-amd64
-        chmod +x fnpack
-        sudo mv fnpack /usr/local/bin/fnpack
-        fnpack --help || true
         
-        echo -e "\033[32m ===> 开始打包VNTS服务端 vnts.fpk 包 <=== \033[0m"
+        cp -rf ./vnts /opt/vnts
+        cd /opt/vnts
+        tar -czf app.tgz --transform='s,app/,,g' app/bin app/ui
+        tar -czf vnts.fpk --exclude='app' *
+        mkdir -p /opt/fnpack_vnt
+        cp -rf vnts.fpk /opt/fnpack_vnt/vnts.fpk
         
-        fnpack build -d ./vnts/
-      
         echo -e "\033[32m ✅ 打包 vnts.fpk 包完成！\033[0m"
 
         
      - uses: actions/upload-artifact@v4
        with:
         name: ${{ matrix.name }}
-        path: ./*.fpk
+        path: /opt/fnpack_vnt/*.fpk
 
-          
+        
+  release:
+    needs: build
+    if: ${{ github.event.inputs.release == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+     - name: Checkout code
+       uses: actions/checkout@v5
+
+     - name: 下载已上传的 .fpk 文件
+       uses: actions/download-artifact@v4
+       with:
+         path: fnpack_files
+
+     - name: 设置构建时间
+       run: |
+        mkdir -p release
+        find fnpack_files -type f -name "*.fpk" -exec mv {} release/ \;
+        chmod +x release/*
+        sudo timedatectl set-timezone "Asia/Shanghai"
+        echo "build_time=$(date '+%Y年%m月%d日%H:%M:%S' | jq -sRr @uri)" >> $GITHUB_ENV
+        echo "tag=$(date '+%Y-%m-%d')" >> $GITHUB_ENV
+
+     - name: 发布Release
+       uses: softprops/action-gh-release@v2
+       with:
+         token: ${{ secrets.GITHUB_TOKEN }}
+         tag_name: ${{ env.tag }}
+         body: |
+           > ### ![](https://img.shields.io/badge/打包时间-${{ env.build_time }}-8267?logo=github&labelColor=%E9%A1%BB)![](https://img.shields.io/github/downloads/${{ github.repository }}/${{ env.tag }}/total?label=%E4%B8%8B%E8%BD%BD%E6%AC%A1%E6%95%B0&logo=github)
+         
+         files: release/*.fpk

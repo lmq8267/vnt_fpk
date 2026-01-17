@@ -12,7 +12,7 @@ if [ -z "$cpucore" ] ; then
 	exit 1
 fi
 
-mv -f "${TRIM_APPDEST}/bin/vnts_{cpucore}" "${TRIM_APPDEST}/bin/vnts"
+mv -f "${TRIM_APPDEST}/bin/vnts_${cpucore}" "${TRIM_APPDEST}/bin/vnts"
 rm -f "${TRIM_APPDEST}/bin"/vnts_*
 
 [ -x "${TRIM_APPDEST}/bin/vnts" ] || chmod +x "${TRIM_APPDEST}/bin/vnts"
