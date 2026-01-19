@@ -7,7 +7,15 @@
 </div>
 </div>
 
-支持 `x86_64` `arm64` `arm` `armv7`  `i386`等架构，下载后在应用商店 手动上传安装即可，群晖的在[lmq8267/vnt_dsm](https://github.com/lmq8267/vnt_dsm) ,在线配置文件[生成](https://lmq8267.github.io/VNT-Magisk/)
+- 支持 `x86_64` `arm64` `arm` `armv7`  `i386`等架构，下载后在应用商店 手动上传安装即可，理论是支持所有架构的飞牛NAS安装的。
+
+- `*_all.fpk`是新版本自动识别架构的安装包 `*_x86.spk` `*_arm.spk` 是旧版本无法识别全架构的安装包
+
+- 首次安装客户端，安装完成后需要打开客户端进去填写配置文件再启动。
+
+- 服务端配置在安装时配置，后续需要修改 在 应用设置 修改后重启应用生效，数据文件和日志在 文件管理 - 应用文件里。
+
+- 群晖的在[lmq8267/vnt_dsm](https://github.com/lmq8267/vnt_dsm) ,在线配置文件[生成](https://lmq8267.github.io/VNT-Magisk/)
 
 ## UI预览
 
