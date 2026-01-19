@@ -35,27 +35,27 @@ jobs:
         include:
         
         - target: VNT客户端-all
-          name: vnt-cli-fpk
+          name: vnt-cli-all
           os: ubuntu-latest
 
         - target: VNT客户端-x86
-          name: vnt-cli-fpk
+          name: vnt-cli-x86
           os: ubuntu-latest
 
         - target: VNT客户端-arm
-          name: vnt-cli-fpk
+          name: vnt-cli-arm
           os: ubuntu-latest
 
         - target: VNTS服务端-all
-          name: vnts-fpk
+          name: vnts-all
           os: ubuntu-latest
 
         - target: VNTS服务端-x86
-          name: vnts-fpk
+          name: vnts-x86
           os: ubuntu-latest
 
         - target: VNTS服务端-arm
-          name: vnts-fpk
+          name: vnts-arm
           os: ubuntu-latest
           
     runs-on: ${{ matrix.os }}
