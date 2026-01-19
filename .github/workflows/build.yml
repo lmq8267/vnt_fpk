@@ -124,7 +124,7 @@ jobs:
         echo -e "\033[32m ✅ 打包 vnt-cli_arm.fpk 包完成！\033[0m"
 
      - name: 打包 all 所有架构 VNTS服务端
-       if: ${{ matrix.target == 'VNTS服务端' && github.event.inputs.vnts == 'true' }}
+       if: ${{ matrix.target == 'VNTS服务端-all' && github.event.inputs.vnts == 'true' }}
        run: |
         echo -e "\033[32m ===> 开始打包 all VNTS服务端 vnts.fpk 包 <=== \033[0m"
         
