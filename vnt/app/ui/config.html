@@ -354,7 +354,7 @@
                     <option value="ws">WS</option>
                     <option value="wss">WSS</option>
                 </select>
-                <input id="server_address" placeholder="vnt.wherewego.top:29872" />
+                <input id="server_address" value="vnt.wherewego.top:29872" placeholder="vnt.wherewego.top:29872" />
             </div>
 
             <label
@@ -489,14 +489,14 @@
 
                 <div class="form-line">
                     <label for="no_proxy"
-                        title="--no-proxy  内置的代理较为简单，而且一般来说直接使用网卡NAT转发性能会更高， 有需要可以自行配置NAT转发（关闭后需要自行配置防火墙规则转发）">内置IP代理:</label>
+                        title="--no-proxy  内置的代理较为简单，而且一般来说直接使用网卡NAT转发性能会更高， 访问局域网内其他设备需要关闭">内置IP代理:</label>
                     <div class="wg-toggle">
                         <label class="custom-radio">
-                            <input type="radio" name="no_proxy" value="false" checked>
+                            <input type="radio" name="no_proxy" value="false">
                             <span class="box-check"></span>开启
                         </label>
                         <label class="custom-radio">
-                            <input type="radio" name="no_proxy" value="true">
+                            <input type="radio" name="no_proxy" value="true" checked>
                             <span class="box-check"></span>关闭
                         </label>
                     </div>
@@ -919,7 +919,7 @@
             const npRadio = document.querySelector('input[name="no_proxy"]:checked');
             const noproxy = npRadio ? npRadio.value : "false";
             if (noproxy === "true") {
-                push("no_proxy", "true", "为true则表示关闭内置IP代理(关闭后需要自行配置防火墙规则转发)");
+                push("no_proxy", "true", "为true则表示关闭内置IP代理，关闭后才能访问局域网内其他设备");
             }
             pushList("dns", getList("dns"), "dns服务器");
             pushList("stun_server", getList("stun"), "stun服务器");
