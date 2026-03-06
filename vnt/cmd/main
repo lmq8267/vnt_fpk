@@ -72,10 +72,24 @@ start_process() {
 
     tun_name=$(sed -n 's/^[[:space:]]*device_name:[[:space:]]*\([^#]*\).*/\1/p' "${VNT_config}" | tr -d "'\"" | xargs)
     [ -z "$tun_name"] && tun_name="vnt-tun"
+    log_msg "添加虚拟网卡 ${tun_name} 的NAT转发规则"
     iptables -I FORWARD -o $tun_name -j ACCEPT
     iptables -I FORWARD -i $tun_name -j ACCEPT
     iptables -I INPUT -i $tun_name -j ACCEPT
     iptables -t nat -I POSTROUTING -o $tun_name -j MASQUERADE
+    (
+        while :; do
+            ip_segment=$(ip route | grep -E "dev\s+$tun_name\s+proto\s+kernel" | awk '{print $1}')
+
+            if [ -n "$ip_segment" ]; then
+                log_msg "添加虚拟网段 ${ip_segment} 的NAT动态伪装规则"
+                iptables -t nat -I POSTROUTING -s "$ip_segment" -j MASQUERADE
+                break
+            fi
+
+            sleep 1
+        done
+    ) &
     # iptables -t nat -I POSTROUTING ! -o $tun_name -s 10.26.0.0/24 -j MASQUERADE
 
     # 记录运行时间
@@ -122,6 +136,8 @@ stop_process() {
         iptables -D FORWARD -i $tun_name -j ACCEPT 2>/dev/null
         iptables -D INPUT -i $tun_name -j ACCEPT 2>/dev/null
         iptables -t nat -D POSTROUTING -o $tun_name -j MASQUERADE 2>/dev/null
+        ip_segment=$(ip route | grep -E "dev\s+$tun_name\s+proto\s+kernel"| awk '{print $1}')
+        [ -z "$ip_segment" ] || iptables -t nat -D POSTROUTING -s $ip_segment -j MASQUERADE 2>/dev/null
         # iptables -t nat -D POSTROUTING ! -o $tun_name -s 10.26.0.0/24 -j MASQUERADE 2>/dev/null
     fi
 
