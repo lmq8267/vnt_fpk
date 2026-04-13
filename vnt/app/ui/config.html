@@ -454,7 +454,7 @@
             <div id="advanced-section" style="display: none; margin-top: 15px;">
 
                 <label
-                    title="--local-dev  当使用对端作为出口节点时需要指定本机的流量出口网卡名称，或本机是duoWAN接入时也需要指定准确的出口网卡名称">本地出口网卡的名称:</label><input
+                    title="--local-dev  当使用对端作为出口节点时需要指定本机的流量出口网卡名称，或本机是多WAN接入时也需要指定准确的出口网卡名称">本地出口网卡的名称:</label><input
                     id="local_dev" placeholder="eth0" />
                 <label title="--nic  指定虚拟网卡名称（默认为 vnt-tun）">虚拟网卡名称:</label><input id="device_name"
                     placeholder="vnt-tun" />
@@ -489,14 +489,14 @@
 
                 <div class="form-line">
                     <label for="no_proxy"
-                        title="--no-proxy  内置的代理较为简单，而且一般来说直接使用网卡NAT转发性能会更高， 访问局域网内其他设备需要关闭">内置IP代理:</label>
+                        title="--no-proxy  内置的代理较为简单，而且一般来说关闭内置IP代理直接使用网卡NAT转发来访问子网设备性能会更高速率会更快">内置IP代理:</label>
                     <div class="wg-toggle">
                         <label class="custom-radio">
-                            <input type="radio" name="no_proxy" value="false">
+                            <input type="radio" name="no_proxy" value="false" checked>
                             <span class="box-check"></span>开启
                         </label>
                         <label class="custom-radio">
-                            <input type="radio" name="no_proxy" value="true" checked>
+                            <input type="radio" name="no_proxy" value="true">
                             <span class="box-check"></span>关闭
                         </label>
                     </div>

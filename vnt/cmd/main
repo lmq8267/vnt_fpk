@@ -71,12 +71,14 @@ start_process() {
     log_msg "进程PID： ${MAIN_PID}"
 
     tun_name=$(sed -n 's/^[[:space:]]*device_name:[[:space:]]*\([^#]*\).*/\1/p' "${VNT_config}" | tr -d "'\"" | xargs)
-    [ -z "$tun_name"] && tun_name="vnt-tun"
+    no_proxy=$(sed -n 's/^[[:space:]]*no_proxy:[[:space:]]*\([^#[:space:]]*\).*/\1/p' "${VNT_config}")
+    [ -z "$tun_name" ] && tun_name="vnt-tun"
     log_msg "添加虚拟网卡 ${tun_name} 的NAT转发规则"
     iptables -I FORWARD -o $tun_name -j ACCEPT
     iptables -I FORWARD -i $tun_name -j ACCEPT
     iptables -I INPUT -i $tun_name -j ACCEPT
     iptables -t nat -I POSTROUTING -o $tun_name -j MASQUERADE
+    if [ "$no_proxy" = "true" ]; then
     (
         while :; do
             ip_segment=$(ip route | grep -E "dev\s+$tun_name\s+proto\s+kernel" | awk '{print $1}')
@@ -90,6 +92,7 @@ start_process() {
             sleep 1
         done
     ) &
+    fi
     # iptables -t nat -I POSTROUTING ! -o $tun_name -s 10.26.0.0/24 -j MASQUERADE
 
     # 记录运行时间
@@ -178,11 +181,13 @@ stop)
     ;;
 status)
     # 检查应用运行状态，运行中返回 0，未运行返回 3
-    if status; then 
-        exit 0
-    else 
-        exit 3
-    fi
+    #if status; then 
+    #    exit 0
+    #else 
+    #    exit 3
+    #fi
+    # 这里始终返回 0 新装插件时 没有配置文件 vnt不会运行，需要返回运行状态才能打开配置页面
+    exit 0 
     ;;
 *)
     exit 1
