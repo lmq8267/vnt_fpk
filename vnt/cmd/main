@@ -13,6 +13,56 @@ log_msg() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')]: INFO $1" >> ${LOG_FILE}
 }
 
+# 检查并修复 route 命令（优先系统自带，其次 BusyBox 软链接）
+check_route_cmd() {
+    ROUTE_CMD=""
+
+    # 先检查系统是否已有 route
+    if command -v route >/dev/null 2>&1; then
+        ROUTE_CMD="$(command -v route)"
+        echo "检测到系统已存在 route 命令：$ROUTE_CMD"
+        return 0
+    fi
+    log_msg "⚠️ 检测到系统缺少 route 命令..."
+
+    # 查找 busybox
+    BUSYBOX_BIN="$(command -v busybox 2>/dev/null)"
+
+    if [ -z "$BUSYBOX_BIN" ]; then
+        log_msg "⚠️ 未找到 busybox，route 命令不可用！"
+        return 1
+    fi
+
+    # 判断 busybox 是否内置 route applet
+    if "$BUSYBOX_BIN" --list | grep -qx "route"; then
+        log_msg "检测到 busybox 内置 route 功能"
+
+        # 确保目录存在
+        mkdir -p /usr/local/bin >/dev/null 2>&1
+
+        # 创建软链接
+        if ln -sf "$BUSYBOX_BIN" /usr/local/bin/route; then
+
+            # 再次验证软链接是否成功
+            if [ -L /usr/local/bin/route ] && command -v route >/dev/null 2>&1; then
+                ROUTE_CMD="/usr/local/bin/route"
+                log_msg "已成功通过 busybox 创建 route 软链接：$ROUTE_CMD"
+                return 0
+            else
+                log_msg "⚠️ route 软链接创建后验证失败！"
+                return 1
+            fi
+
+        else
+            log_msg "⚠️ 创建 route 软链接失败！route 命令不可用！"
+            return 1
+        fi
+    else
+        log_msg "⚠️ 当前 busybox 未内置 route 功能！route 命令不可用！"
+        return 1
+    fi
+}
+
 start_process() {
     if status; then
         return 0
@@ -34,6 +84,9 @@ start_process() {
         log_msg "⚠️ token缺失！配置文件中必须包含 token 才能启动！"
         return 0
     fi
+    
+    # 检查 route 命令
+    check_route_cmd
 
     # 启动主控制进程（一个 PID 管全部）
     (
@@ -78,6 +131,9 @@ start_process() {
     iptables -I FORWARD -i $tun_name -j ACCEPT
     iptables -I INPUT -i $tun_name -j ACCEPT
     iptables -t nat -I POSTROUTING -o $tun_name -j MASQUERADE
+    if [ "$no_proxy" = "true" ]; then
+    	sysctl -w net.ipv4.ip_forward=1 >/dev/null 2>&1
+    fi
     # if [ "$no_proxy" = "true" ]; then
     (
         while :; do
