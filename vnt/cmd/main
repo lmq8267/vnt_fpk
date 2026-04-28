@@ -244,13 +244,11 @@ stop)
     ;;
 status)
     # 检查应用运行状态，运行中返回 0，未运行返回 3
-    #if status; then 
-    #    exit 0
-    #else 
-    #    exit 3
-    #fi
-    # 这里始终返回 0 新装插件时 没有配置文件 vnt不会运行，需要返回运行状态才能打开配置页面
-    exit 0 
+    if status; then 
+        exit 0
+    else 
+        exit 3
+    fi
     ;;
 *)
     exit 1
