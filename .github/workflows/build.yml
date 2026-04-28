@@ -63,7 +63,7 @@ jobs:
          TARGET: ${{ matrix.target }}
     steps:
      - name: Checkout code
-       uses: actions/checkout@v5
+       uses: actions/checkout@main
 
      -  name: delete-workflow-runs
         uses: Mattraks/delete-workflow-runs@main
@@ -71,7 +71,13 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           retain_days: 0
           keep_minimum_runs: 0
-       
+          
+     - name: 修改版本号时间
+       run: |
+        TODAY=$(date +'%Y-%m-%d')
+        sed -i "s/-time/-$TODAY/g" vnt/manifest
+        sed -i "s/-time/-$TODAY/g" vnts/manifest
+    
      - name: 打包 all 所有架构 VNT客户端
        if: ${{ matrix.target == 'VNT客户端-all' && github.event.inputs.vnt == 'true' }}
        run: |
