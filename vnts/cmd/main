@@ -27,9 +27,11 @@ log_msg() {
 }
 
 start_process() {
-    if status; then
+    if pidof "vnts" >/dev/null 2>&1 && status; then
+    	log_msg "程序已运行，跳过启动"
         return 0
     fi
+    rm -f "${PID_FILE}" >/dev/null 2>&1
 
     # 启动前清空日志文件
     > ${LOG_FILE}
@@ -80,6 +82,10 @@ stop_process() {
             log_msg "vnts进程已结束运行！"
         fi
     fi
+    if pidof "vnts" >/dev/null 2>&1; then
+    	killall -9 vnts >/dev/null 2>&1
+    fi
+    rm -f "${PID_FILE}" >/dev/null 2>&1
 
     return 0
 }
